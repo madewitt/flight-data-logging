@@ -1,48 +1,47 @@
 /*
- *	Title: 		DataCollection.c
- *	Project:	Flight Data Collection System
- *	Author: 	Martin A. DeWitt, Assistant Professor of Physics, High Point University
- *	Date: 		April 15, 2018
- *  
- *	Purpose:	Allow a Raspberry Pi to collect and log data from an Adafruit BNO055 orientation sensor,
- *				two AllSensors DLHR-L10D differential pressure sensors, and a radio-controlled aircraft
- *				receiver. The Raspberry Pi, sensors, and receiver are onboard a radio-controlled
- *				ApprenticeS trainer aircraft made by Horizon Hobby.
+ * Title:   main.c
+ * Project: Flight Data Collection System
+ * Author:  Martin A. DeWitt, Assistant Professor of Physics, High Point University
+ * Date:    April 15, 2018
  *
- *	Method:		The Adafruit BNO055 has an onboard Cortex-M0 to collect data from a 3-axis gyro, a
- *				3-axis accelerometer, and 3-axis magnetometer, perform sensor fusion, and output the
- *				resulting orientation data at 100 Hz. Therefore, the BNO055 is polled inside of a data
- *				collection loop in MAIN to retrieve the Euler angles (heading, roll, pitch). Because the
- *				BNO055 employs clock stretching, which the Raspberry Pi is not equipped to handle, it is
- *				connected via UART rather than I2C.
+ * Purpose: Allow a Raspberry Pi to collect and log data from an Adafruit BNO055 orientation sensor,
+ *          two AllSensors DLHR-L10D differential pressure sensors, and a radio-controlled aircraft
+ *          receiver. The Raspberry Pi, sensors, and receiver are onboard a radio-controlled
+ *          ApprenticeS trainer aircraft made by Horizon Hobby.
  *
- *				Each differential pressure sensor measures the difference between pitot and static pressures
- *				in a pitot-static tube mounted under the aircraft's wing. These pressure differences are
- *				used to determine the aircraft's airspeed and angle of attack. One pressure sensor is
- *				connected via SPI, and the second connected via I2C. The sensors are equipped with interrupt
- *				pins, which are connected to GPIO pins on the Raspberry Pi. These GPIO pins are used to
- *				detect the rising edges of interrupt signals sent by the pressure sensors once the result
- *				of a measurement is available. Interrupt service routines are used to retrieve data from the
- *				differential sensors' registers and request the start of a new pressure measurement.
- *				
- *				The elevator and throttle channels of the aircraft's radio receiver are connected to
- *				Raspberry Pi GPIO pins. Both the rising and falling edges of the PWM signals sent from the
- *				aircraft's radio receiver are treated as interrupt signals. Interrupt service routines are
- *				used to record the times of these edges, which are later used to reconstruct the PWM signal
- *				and determine the commanded elevator deflection and throttle setting.
+ * Method: The Adafruit BNO055 has an onboard Cortex-M0 to collect data from a 3-axis gyro, a
+ *         3-axis accelerometer, and 3-axis magnetometer, perform sensor fusion, and output the
+ *         resulting orientation data at 100 Hz. Therefore, the BNO055 is polled inside of a data
+ *         collection loop in MAIN to retrieve the Euler angles (heading, roll, pitch). Because the
+ *         BNO055 employs clock stretching, which the Raspberry Pi is not equipped to handle, it is
+ *         connected via UART rather than I2C.
  *
- *				*NOTE: 	A few NON-CONSTANT GLOBAL VARIABLES are used to hold data collected by the interrupt
- *						service routines because these routines cannot have formal parameters and must be
- *						of return type VOID. The interrupt service routines are the only functions that
- *						are allowed to modify the global variables. If this code is modified, do not write
- *						any functions that modify these variables.
+ *         Each differential pressure sensor measures the difference between pitot and static pressures
+ *         in a pitot-static tube mounted under the aircraft's wing. These pressure differences are
+ *         used to determine the aircraft's airspeed and angle of attack. One pressure sensor is
+ *         connected via SPI, and the second connected via I2C. The sensors are equipped with interrupt
+ *         pins, which are connected to GPIO pins on the Raspberry Pi. These GPIO pins are used to
+ *         detect the rising edges of interrupt signals sent by the pressure sensors once the result
+ *         of a measurement is available. Interrupt service routines are used to retrieve data from the
+ *         differential sensors' registers and request the start of a new pressure measurement.
  *
- *				Use is made of the WiringPi library (wiringpi.com), which is a "PIN based GPIO library
- *				written in C BCM2835, BCM2836 and BCM2837 SoC devices used in all Raspberry Pi versions."
- *				Header files from this include wiringPi.h, wiringPiSPI.h, wiringPiI2C.h, and wiringPiSerial.h.
- *				The library was developed directly on Raspberry Pi and no other platforms or cross-compilers
- *				are supported by the original author.
+ *         The elevator and throttle channels of the aircraft's radio receiver are connected to
+ *         Raspberry Pi GPIO pins. Both the rising and falling edges of the PWM signals sent from the
+ *         aircraft's radio receiver are treated as interrupt signals. Interrupt service routines are
+ *         used to record the times of these edges, which are later used to reconstruct the PWM signal
+ *         and determine the commanded elevator deflection and throttle setting.
  *
+ *         *NOTE: A few NON-CONSTANT GLOBAL VARIABLES are used to hold data collected by the interrupt
+ *         service routines because these routines cannot have formal parameters and must be
+ *         of return type VOID. The interrupt service routines are the only functions that
+ *         are allowed to modify the global variables. If this code is modified, do not write
+ *         any functions that modify these variables.
+ *
+ *         Use is made of the WiringPi library (wiringpi.com), which is a "PIN based GPIO library
+ *         written in C BCM2835, BCM2836 and BCM2837 SoC devices used in all Raspberry Pi versions."
+ *         Header files from this include wiringPi.h, wiringPiSPI.h, wiringPiI2C.h, and wiringPiSerial.h.
+ *         The library was developed directly on Raspberry Pi and no other platforms or cross-compilers
+ *         are supported by the original author.
  *
  */
  
@@ -57,41 +56,43 @@
 #include<wiringSerial.h>
 #include<time.h>
 
-#include "FlightSensors.h"	// Functions and Interrupt Service Routines for communicating with sensors
+#include "FlightSensors.h"  // Functions and Interrupt Service Routines for communicating with sensors
 
 /* NON-CONST GLOBAL Variables Needed for Interrupt Service Routines:
  * These variables are only modified by the corresponding interrupt service routine. DO NOT ADD ANY FUNCTIONS
  * THAT MODIFY THESE VARIABLES.
  */
 //Elevator PWM Global Variables for ISR -- ONLY MODIFIED BY elevator_isr()
-static volatile int elevatorCounter;				// Counter for the number of data records collected
-static volatile double elevatorTime[MAX_RECORDS];	// Array for storing PWM edge times. Index is the record number (elevatorCounter).
+static volatile int elevatorCounter;               // Counter for the number of data records collected
+static volatile double elevatorTime[MAX_RECORDS];  // Array for storing PWM edge times. Index is the record number (elevatorCounter).
 
 // Throttle PWM Global Variables for ISR -- ONLY MODIFIED BY throttle_isr()
-static volatile int throttleCounter = 0;			// Counter for the number of data records collected
-static volatile double throttleTime[MAX_RECORDS];	// Array for storing PWM edge times. Index is the record number (throttleCounter).
+static volatile int throttleCounter = 0;            // Counter for the number of data records collected
+static volatile double throttleTime[MAX_RECORDS];   // Array for storing PWM edge times. Index is the record number (throttleCounter).
 
 // SPI Differential Pressure Sensor Global Variables for ISR -- ONLY MODIFIED by spi_pressure_isr()
-static volatile int spiCounter;	// Counter for the number of data records collected
-/* spiData[][]: Array for storing SPI data. First index is the record number (spiCounter). Second index is one of
- * the following: 	PRESSURE_DATA_TIME, PRESSURE_DATA_MSB, PRESSURE_DATA_CSB, PRESSURE_DATA_LSB,
- * 					PRESSURE_READ_ERROR, PRESSURE_REQUEST_ERROR.
+static volatile int spiCounter;  // Counter for the number of data records collected
+/* spiData[i][j]: Array for storing SPI data.
+ * First index is the record number (spiCounter). Second index is one of the following:
+ * PRESSURE_DATA_TIME, PRESSURE_DATA_MSB, PRESSURE_DATA_CSB, PRESSURE_DATA_LSB,
+ * PRESSURE_READ_ERROR, PRESSURE_REQUEST_ERROR.
  */	 
 static volatile uint8_t spiData[MAX_RECORDS][MAX_VARS];
 	
 // I2C Differential Pressure Sensor Global Variables for ISR  -- ONLY MODIFIED by i2c_pressure_isr()
-static volatile int i2cCounter;	// counter for the number of data records collected
-/* Array for storing I2C data. First index is the record number (i2cCounter). Second index is one of
- * the following: 	PRESSURE_DATA_TIME, PRESSURE_DATA_MSB, PRESSURE_DATA_CSB, PRESSURE_DATA_LSB,
- * 					PRESSURE_READ_ERROR, PRESSURE_REQUEST_ERROR.
+static volatile int i2cCounter;  // counter for the number of data records collected
+/* i2cdata[i][j]: Array for storing I2C data.
+ * First index is the record number (i2cCounter). Second index is one of the following:
+ * PRESSURE_DATA_TIME, PRESSURE_DATA_MSB, PRESSURE_DATA_CSB, PRESSURE_DATA_LSB,
+ * PRESSURE_READ_ERROR, PRESSURE_REQUEST_ERROR.
  */	 
 static volatile uint8_t i2cData[MAX_RECORDS][MAX_VARS];
 
-/* ####### SPECIAL CASE: The following NON-CONST GLOBAL variable, i2cPressureId, by default as a static
- * ####### variable, is inititalized to 0. Its value is modified ONLY ONCE in MAIN when the pressure sensor
- * ####### is initialized on the I2C bus. Its value is then the file descriptor returned by the
- * ####### initilazation function. It is accessed by the i2c_pressure_isr() in order to communicate with
- * ####### the I2C pressure sensor. This value is only modified ONCE.
+/* SPECIAL CASE: The following NON-CONST GLOBAL variable, i2cPressureId, by default as a static
+ * variable, is inititalized to 0. Its value is modified ONLY ONCE in MAIN when the pressure sensor
+ * is initialized on the I2C bus. Its value is then the file descriptor returned by the
+ * initilazation function. It is accessed by the i2c_pressure_isr() in order to communicate with
+ * the I2C pressure sensor. This value is only modified ONCE.
  */
 static int i2cPressureId;
 
@@ -102,7 +103,7 @@ void main()
 	 * BEGIN SENSOR INITIALIZATION
 	 * ---------------------------
 	 */
-	// Wiring Pi Setup command so that WIRING PI pin numbers can be used
+	// WiringPi Setup command so that WiringPi pin numbers can be used.
 	wiringPiSetup();
 
 	// Initialize the differential sensor on the SPI bus.
@@ -141,11 +142,11 @@ void main()
 		printf("UART: BNO055 orientation sensor Id = %d\n\n", UART_IMU_ID)
 	}
 
-	// Use WiringPi library command to flush UART IO buffers
+	// Use WiringPi library command to flush UART IO buffers.
 	serialFlush(UART_IMU_ID);	// flush pending data
 	delay(1000);				// pause 1 second before attempting to read/write the BNO055
 
-	// Declare and initialize variables for holding UART error codes
+	// Declare and initialize variables for holding UART error codes.
 	int8_t uartErrorLog[UART_ERROR_LOG_SIZE];   	// Array to hold UART error codes
 	for(size_t i = 0; i < UART_ERROR_LOG_SIZE; i++)	// Initialize all UART error log entries to 0
 	{
@@ -254,17 +255,17 @@ void main()
 	 */
 
 	// Variable declarations for final pressure calculations
-	double dp1[MAX_SIZE];	// Array for storing final pressure values from SPI sensors
-	double dp2[MAX_SIZE];	// Array for storing final pressure values from I2C sensors
-	uint32_t pOutDig;  		// P_OUT_DIG is the unsinged 24-bit raw measurement (see pressure sensor datasheet)
+	double dp1[MAX_SIZE];   // Array for storing final pressure values from SPI sensors
+	double dp2[MAX_SIZE];   // Array for storing final pressure values from I2C sensors
+	uint32_t pOutDig;       // P_OUT_DIG is the unsinged 24-bit raw measurement (see pressure sensor datasheet)
 	
 	// Variavle declatarions for final Euler angle calculations
-	int16_t heading_raw;		// Signed 16-bit raw measurement value from BNO055
-	int16_t roll_raw;			// Signed 16-bit raw measurement value from BNO055
-	int16_t pitch_raw;			// Signed 16-bit raw measurement value from BNO055
-	double heading[MAX_SIZE];	// Array for storing final heading in degrees
-	double roll[MAX_SIZE];		// Array for storing final roll in degrees
-	double pitch[MAX_SIZE];		// Array for storing final pitch in degrees
+	int16_t heading_raw;        // Signed 16-bit raw measurement value from BNO055
+	int16_t roll_raw;           // Signed 16-bit raw measurement value from BNO055
+	int16_t pitch_raw;          // Signed 16-bit raw measurement value from BNO055
+	double heading[MAX_SIZE];   // Array for storing final heading in degrees
+	double roll[MAX_SIZE];      // Array for storing final roll in degrees
+	double pitch[MAX_SIZE];     // Array for storing final pitch in degrees
 	
 	/* Use raw measurements to caluculate final data values. Equations are taken from the DLHR-L10D
 	 * pressure sensor and the BNO055 orientation sensor datasheets.

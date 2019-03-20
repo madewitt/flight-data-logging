@@ -1,10 +1,10 @@
 /*
- *	Title: 		FlightSensors.c
- *	Project:	Flight Data Collection System
- *	Author: 	Martin A. DeWitt, Assistant Professor of Physics, High Point University
- *	Date: 		April 15, 2018
- *  
- *	Purpose:	Functions and interrupt service routines for communicating with sensors.
+ * Title:   FlightSensors.c
+ * Project: Flight Data Collection System
+ * Author:  Martin A. DeWitt, Assistant Professor of Physics, High Point University
+ * Date:    April 15, 2018
+ *
+ * Purpose: Functions and interrupt service routines for communicating with sensors.
  */
  
 #include<stdio.h>
@@ -28,22 +28,22 @@
 #define MAX_SIZE = 120000
 
 // Define Interrupt Pin Numbers for PWM signal and differential pressure sensors
-#define SPI_PRESSURE_INTERRUPT_PIN 0	// Pressure SPI interrupt pin is (#11)--GPIO17 --> WiringPi Pin 0
-#define I2C_PRESSURE_INTERRUPT_PIN 1	// Pressure I2C interrupt pin is (#12)--GPIO18 --> WiringPi Pin 1
-#define PWM_ELEVATOR_INTERRUPT_PIN 2	// Elevator GPIO interrupt pin is (#13)--GPIO27 --> WiringPi Pin 2
-#define PWM_THROTTLE_INTERRUPT_PIN 3	// Throttle GPIO interrupt pin is (#15)--GPIO22 --> WiringPi Pin 3
+#define SPI_PRESSURE_INTERRUPT_PIN 0   // Pressure SPI interrupt pin is (#11)--GPIO17 --> WiringPi Pin 0
+#define I2C_PRESSURE_INTERRUPT_PIN 1   // Pressure I2C interrupt pin is (#12)--GPIO18 --> WiringPi Pin 1
+#define PWM_ELEVATOR_INTERRUPT_PIN 2   // Elevator GPIO interrupt pin is (#13)--GPIO27 --> WiringPi Pin 2
+#define PWM_THROTTLE_INTERRUPT_PIN 3   // Throttle GPIO interrupt pin is (#15)--GPIO22 --> WiringPi Pin 3
 
 // Define constatns related to differential pressure sensors
-#define MAX_RECORDS 120000 		// Maximum number of records that can be stored in a pressure data array
-#define MAX_VARS 6				// Maximum number of varaibles stored in a pressure data array
-#define PRESSURE_DATA_TIME 0	// Second index of pressure data 2D arrays where time is stored
-#define PRESSURE_DATA_MSB 1		// Second index of pressure data 2D arrays where the MSB of the measurement is stored
-#define PRESSURE_DATA_CSB 2		// Second index of pressure data 2D arrays where the CSB of the measurement is stored
-#define PRESSURE_DATA_LSB 3		// Second index of pressure data 2D arrays where the LSB of the measurement is stored
-#define PRESSURE_READ_ERROR 4	// Second index of pressure data 2D arrays where a pressure read error is indicated
+#define MAX_RECORDS 120000      // Maximum number of records that can be stored in a pressure data array
+#define MAX_VARS 6              // Maximum number of varaibles stored in a pressure data array
+#define PRESSURE_DATA_TIME 0    // Second index of pressure data 2D arrays where time is stored
+#define PRESSURE_DATA_MSB 1     // Second index of pressure data 2D arrays where the MSB of the measurement is stored
+#define PRESSURE_DATA_CSB 2     // Second index of pressure data 2D arrays where the CSB of the measurement is stored
+#define PRESSURE_DATA_LSB 3     // Second index of pressure data 2D arrays where the LSB of the measurement is stored
+#define PRESSURE_READ_ERROR 4   // Second index of pressure data 2D arrays where a pressure read error is indicated
 #define PRESURE_REQUEST_ERROR 5 // Second index of pressure data 2D arrays where an error requesting to start a new measurement is stored
-#define SPI_CHANNEL 0			// SPI channel on the Raspberry Pi to which the pressure sensor is connected (0 or 1)
-#define SPI_CLK_SPEED 500000	// SPI clock speed (frequency in Hz)
+#define SPI_CHANNEL 0           // SPI channel on the Raspberry Pi to which the pressure sensor is connected (0 or 1)
+#define SPI_CLK_SPEED 500000    // SPI clock speed (frequency in Hz)
 
 // Maximum number of records that can be stored in the UART error log
 #define UART_ERROR_LOG_SIZE 20000
@@ -80,8 +80,8 @@
 #define UART_SEND_ERROR 0x10
 
 
-#define PRESSURE_SENSOR_I2C_ADDR 0x29	// The I2C address of the differential pressure sensor
-#define IMU_BAUDRATE 115200				// Baudrate to use for communicating with the BNO055 on UART.
+#define PRESSURE_SENSOR_I2C_ADDR 0x29   // The I2C address of the differential pressure sensor
+#define IMU_BAUDRATE 115200             // Baudrate to use for communicating with the BNO055 on UART.
 
 
 /* 
@@ -99,9 +99,9 @@
  * ---------------------------------------------------------------------------------------------------------
  * RETURNS: N/A
  *
- * NOTE: 	elevatorTime (array) and elevatorCounter are non-const global variables. This interrupt service
- *			routine is the only function that modifies the values of these variables. In MAIN, the values
- *			stored in these variables are read and stored in CSV files.
+ * NOTE: elevatorTime (array) and elevatorCounter are non-const global variables. This interrupt service
+ *       routine is the only function that modifies the values of these variables. In MAIN, the values
+ *       stored in these variables are read and stored in CSV files.
  *
  * ---------------------------------------------------------------------------------------------------------
  */
@@ -131,9 +131,9 @@ void elevator_isr(void)
  *
  * RETURNS: N/A
  *
- * NOTE:	throttleTime (array) and throttleCounter are non-const global variables. This interrupt service
- *			routine is the only function that modifies the values of these variables. In MAIN, the values
- *			stored in these variables are read and stored in CSV files.
+ * NOTE:  throttleTime (array) and throttleCounter are non-const global variables. This interrupt service
+ *        outine is the only function that modifies the values of these variables. In MAIN, the values
+ *        stored in these variables are read and stored in CSV files.
  *
  * ---------------------------------------------------------------------------------------------------------
  */
@@ -183,10 +183,10 @@ int request_new_spi_measurement(void)
  * --------------------------------------------------------------------------------------------------------
  *
  * PARAMETERS:
- * 		buffer: Pointer to a buffer defined in the calling function. The read command is stored in this
- *				buffer and is sent to the sensor. The buffer is overwritten with the returned data.
+ *     buffer: Pointer to a buffer defined in the calling function. The read command is stored in this
+ *             buffer and is sent to the sensor. The buffer is overwritten with the returned data.
  *
- *		bufferLength: Size of the buffer. 	
+ *     bufferLength: Size of the buffer. 	
  *
  * --------------------------------------------------------------------------------------------------------
  *
@@ -222,9 +222,9 @@ int get_spi_pressure_data(uint8_t *buffer, size_t bufferLength)
  *
  * RETURNS: N/A
  *
- * NOTE:	spiData(array) and spiCounter are non-const global variables used to store the pressure data.
- * 			This is the ONLY function that modifies these variables. In MAIN, the values stored in these
- *			variables are read and stored in CSV files.
+ * NOTE:   spiData(array) and spiCounter are non-const global variables used to store the pressure data.
+ *         This is the ONLY function that modifies these variables. In MAIN, the values stored in these
+ *         variables are read and stored in CSV files.
  *
  * --------------------------------------------------------------------------------------------------------
  */
@@ -244,9 +244,9 @@ void spi_pressure_isr(void)
 	 * buffer[5] -> CSB of 24-bit temperature measurement
 	 * buffer[6] -> LSB of 24-bit temperature measurement
 	*/
-	static const size_t bufferLength = 7;	// There are seven bytes of data returned by the pressure sensor
-	static uint8_t buffer[bufferLength];	// Buffer to hold returned data
-	static int spi_return_value;			// Holds return value of a function call
+	static const size_t bufferLength = 7;   // There are seven bytes of data returned by the pressure sensor
+	static uint8_t buffer[bufferLength];    // Buffer to hold returned data
+	static int spi_return_value;            // Holds return value of a function call
 	
 	spi_return_value = get_spi_pressure_data(buffer, bufferLength);
 
@@ -282,7 +282,7 @@ void spi_pressure_isr(void)
  * ---------------------------------------------------------------------------------------------------------
  *
  * RETURNS: Returns 0 if the new measurement request is successful; returns -1 if there is an error
- * requesting the measurement
+ *          requesting the measurement
  *
  * ---------------------------------------------------------------------------------------------------------
  */
@@ -309,9 +309,9 @@ int request_new_i2c_measurement(void)
  *
  * RETURNS: N/A
  *
- * NOTE:	i2cData(array) and i2cCounter are non-const global variables used to store the pressure data.
- * 			This is the ONLY function that modifies these variables. In MAIN, the values stored in these
- *			variables are read and stored in CSV files.
+ * NOTE:   i2cData(array) and i2cCounter are non-const global variables used to store the pressure data.
+ *         This is the ONLY function that modifies these variables. In MAIN, the values stored in these
+ *         variables are read and stored in CSV files.
  *
  * --------------------------------------------------------------------------------------------------------
  */
@@ -321,31 +321,29 @@ void i2c_pressure_isr(void)
 	clock_gettime(CLOCK_REALTIME,&i2cTimespec);
 	i2cData[i2cCounter][PRESSURE_DATA_TIME] = (double)i2cTimespec.tv_sec + (double)i2cTimespec.tv_nsec/1000000000;
 	
-	/* Read pressure and temperature data  */
+	// Read pressure and temperature data
 	static const size_t numberOfBytes = 7;
 	static uint8_t buffer[numberOfBytes] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 	static volatile int i2c_return_value = read(i2cPressureId, buffer, numberOfBytes);
    
-	/* Check for an error reading data */
+	// Check for an error reading data
 	i2cData[i2cCounter][PRESSURE_READ_ERROR] = ( (i2c_return_value == -1) ? 1 : 0 );
 
-	/* Store data in arrays */
+	// Store data in arrays
 	i2cData[i2cCounter][PRESSURE_DATA_MSB] = i2cBuffer[1];
 	i2cData[i2cCounter][PRESSURE_DATA_CSB] = i2cBuffer[2];
 	i2cData[i2cCounter][PRESSURE_DATA_LSB] = i2cBuffer[3];
    
-	/* Request a new measurement */
+	// Request a new measurement
 	i2c_return_value = request_new_i2c_measurement();
 
-	/* Check to see if there is an error requesting a new measurement */
+	// Check to see if there is an error requesting a new measurement
 	i2cData[i2cCounter][PRESSURE_REQUEST_ERROR]= ( (i2c_return_value == -1) ? 1 : 0)
    
-	/* Update the data counter */
 	i2cCounter++;
 }
 
 
-/* Function to send serial data to device on UART */
 /*
  * --------------------------------------------------------------------------------------------------------
  * FUNCTION: uart_send
@@ -358,20 +356,20 @@ void i2c_pressure_isr(void)
  * --------------------------------------------------------------------------------------------------------
  *
  * PARAMETERS:
- *		uartId:				Id of the device connected via UART.
+ *     uartId:              Id of the device connected via UART.
  *
- *		uartCmd:			Pointer to a buffer that holds the multi-byte command to be sent to the sensor.
+ *     uartCmd:             Pointer to a buffer that holds the multi-byte command to be sent to the sensor.
  *
- *		uartCmdLength:		The number of bytes in uartCmd.
+ *     uartCmdLength:       The number of bytes in uartCmd.
  *
- *		uartResponse:		Pointer to a buffer in which to store the sensor's response to the command sent.
+ *     uartResponse:        Pointer to a buffer in which to store the sensor's response to the command sent.
  *
- *		uartResponseLength:	The number of bytes that can be stored in uartResponse.
+ *     uartResponseLength:  The number of bytes that can be stored in uartResponse.
  *
- *		uartErrorLog:		Pointer to an array in which to store error UART error codes.
+ *     uartErrorLog:        Pointer to an array in which to store error UART error codes.
  *
- *		uartErrorLogCounter:Pointer to a counter that keeps track of the number of UART error codes
- *							recorded.
+ *     uartErrorLogCounter: Pointer to a counter that keeps track of the number of UART error codes
+ *                           recorded.
  *
  * --------------------------------------------------------------------------------------------------------
  *
@@ -436,11 +434,11 @@ int8_t uart_send(int8_t uartId, uint8_t *uartCmd, int uartCmdLength, uint8_t *ua
  * --------------------------------------------------------------------------------------------------------
  *
  * PARAMETERS:
- * 	UART_IMU_ID:	The device ID of the BNO055 sensor on UART.
+ *     UART_IMU_ID:         The device ID of the BNO055 sensor on UART.
  *
- *	uartErrorLog:	Pointer to an array for storing error codes.
+ *     uartErrorLog:        Pointer to an array for storing error codes.
  *
- *	uartErrorLogCounter:	Pointer to a counter to keep track of the number of error codes recorded.
+ *     uartErrorLogCounter: Pointer to a counter to keep track of the number of error codes recorded.
  *
  * --------------------------------------------------------------------------------------------------------
  *
@@ -450,7 +448,7 @@ int8_t uart_send(int8_t uartId, uint8_t *uartCmd, int uartCmdLength, uint8_t *ua
  */
 void start_imu_fusion_mode(const int UART_IMU_ID, int8_t *uartErrorLog, size_t *uartErrorLogCounter)
 {
-	uint8_t OPR_MODE = 0;     /* Operating mode of the BNO055. Stored in register address Page 0: 0x3D */
+	uint8_t OPR_MODE = 0;    // Operating mode of the BNO055. Stored in register address Page 0: 0x3D
 	const int MAX_IMU_CMD_LENGTH = 5;
 	uint8_t imuCmd[MAX_IMU_CMD_LENGTH] = {0x00, 0x00, 0x00, 0x00, 0x00};
 	int imuCmdLength = 0;
@@ -458,12 +456,12 @@ void start_imu_fusion_mode(const int UART_IMU_ID, int8_t *uartErrorLog, size_t *
 	uint8_t imuResponse[IMU_RESPONSE_LENGTH] = {0x00, 0x00};
 	uint8_t numberOfBytes = 0;
 	
-	/* Send command to read the IMU's Operating Mode register 0x3D */
-	imuCmd[0] = 0xAA;     /* Initial byte for any UART command. */
-	imuCmd[1] = 0x01;     /* Value of 0x01 means this is a READ command. */
-	imuCmd[2] = 0x3D;     /* The address of the register to be read. */
-	imuCmd[3] = 0x01;     /* Number of bytes to be read. */
-	imuCmdLength = 4;    /* Number of bytes in the command. */
+	// Send command to read the IMU's Operating Mode register 0x3D
+	imuCmd[0] = 0xAA;   // Initial byte for any UART command.
+	imuCmd[1] = 0x01;   // Value of 0x01 means this is a READ command.
+	imuCmd[2] = 0x3D;   // The address of the register to be read.
+	imuCmd[3] = 0x01;   // Number of bytes to be read.
+	imuCmdLength = 4;   // Number of bytes in the command.
 	
 	int8_t imu_return_value;
 	imu_return_value = uart_send(UART_IMU_ID, imuCmd, imuCmdLength, imuResponse, IMU_RESPONSE_LENGTH, uartErrorLog, uartErrorLogCounter);
@@ -473,16 +471,16 @@ void start_imu_fusion_mode(const int UART_IMU_ID, int8_t *uartErrorLog, size_t *
 		read(UART_IMU_ID, &OPR_MODE, numberOfBytes);
 		printf("OPR_MODE = %u\n", OPR_MODE);
 		
-		/* If IMU is not in Fusion Mode, initialize fusion mode.  */
+		// If IMU is not in Fusion Mode, initialize fusion mode.
 	    if(OPR_MODE != 0x1C)
 	    {
-		    /* Write to OPR_MODE to initalize NDOF Fusion Mode */
-		    imuCmd[0] = 0xAA;				/* Initial byte for any UART command. */
-		    imuCmd[1] = 0x00;				/* Value of 0x00 means this is a WRITE command. */
-		    imuCmd[2] = 0x3D;				/* The address of the register to be written to. */
-		    imuCmd[3] = 0x01;				/* Number of bytes to be written. */
-		    imuCmd[4] = OPR_MODE | 0x0C;	/* Data to be written */
-		    imuCmdLength = 5;					/* Number of bytes in the command. */
+		    // Write to OPR_MODE to initalize NDOF Fusion Mode
+		    imuCmd[0] = 0xAA;            // Initial byte for any UART command.
+		    imuCmd[1] = 0x00;            // Value of 0x00 means this is a WRITE command.
+		    imuCmd[2] = 0x3D;            // The address of the register to be written to.
+		    imuCmd[3] = 0x01;            // Number of bytes to be written.
+		    imuCmd[4] = OPR_MODE | 0x0C; // Data to be written.
+		    imuCmdLength = 5;            // Number of bytes in the command.
 			int8_t imu_return_value2;
 		    imu_return_value2 = uart_send(UART_IMU_ID, imuCmd, imuCmdLength, imuResponse, IMU_RESPONSE_LENGTH, uartErrorLog, uartErrorLogCounter);
 			if(imu_return_value2 == 0)
@@ -498,7 +496,7 @@ void start_imu_fusion_mode(const int UART_IMU_ID, int8_t *uartErrorLog, size_t *
 	    {
 		    printf("Already running in Fusion Mode.\n");
 	    }
-	    /* Datasheet states it takes 19ms to change operating mode. Wait 30ms for good measure. */
+	    // BN0055 datasheet states it takes 19ms to change operating mode. Wait 30ms for good measure.
 	    delay(30);
 		
 	}
@@ -517,25 +515,25 @@ void start_imu_fusion_mode(const int UART_IMU_ID, int8_t *uartErrorLog, size_t *
  * A loop that reads the calibration status register (CALIB_STAT at address 0x35) of the BNO055 orientation
  * sensor and outputs the result to STDOUT until the sensors are fully calibrated. During this time, the
  * user must do the following:
- *		1. Leave the aircraft still on a level surface for several seconds.
- *		2. Orient the aircraft such that the nose points forward and the right wing
+ *     1. Leave the aircraft still on a level surface for several seconds.
+ *     2. Orient the aircraft such that the nose points forward and the right wing
  *		   points downward and hold still for 3-4 seconds.
- *		3. Orient the aircraft such that the nose points forward and the top of the
+ *     3. Orient the aircraft such that the nose points forward and the top of the
  *		   aircraft points downward and hold still for 3-4 seconds.
- *		3. Orient the aircraft such that the nose points forward and the left wing
+ *     3. Orient the aircraft such that the nose points forward and the left wing
  *		   points downward and hold still for 3-4 seconds.
- *		4. Orient the aircraft such that the nose points upward and hold for 3-4 seconds.
- *		5. Orient the aircraft such that the nose points downward and hold for 3-4 seconds.
- *		6. Repeat these steps until the calibration is complete. 
+ *     4. Orient the aircraft such that the nose points upward and hold for 3-4 seconds.
+ *     5. Orient the aircraft such that the nose points downward and hold for 3-4 seconds.
+ *     6. Repeat these steps until the calibration is complete. 
  *
  * --------------------------------------------------------------------------------------------------------
  *
  * PARAMETERS:
- *		UART_IMU_ID:	The device ID of the BNO055 sensor on UART.
+ *     UART_IMU_ID:         The device ID of the BNO055 sensor on UART.
  *
- *		uartErrorLog:	Pointer to an array for storing error codes.
+ *     uartErrorLog:        Pointer to an array for storing error codes.
  *
- *		uartErrorLogCounter:	Pointer to a counter to keep track of the number of error codes recorded.
+ *     uartErrorLogCounter: Pointer to a counter to keep track of the number of error codes recorded.
  *
  * --------------------------------------------------------------------------------------------------------
  *
@@ -553,16 +551,17 @@ void calibrate_imu_sensors(const int UART_IMU_ID, int8_t *uartErrorLog, size_t *
 	const int IMU_RESPONSE_LENGTH = 2;
 	uint8_t imuResponse[IMU_RESPONSE_LENGTH] = {0x00, 0x00};
 	
-	/* Send command to read the Calibration Status register 0x35 */
-	/* CALIB_STAT is a single byte: 
-	bits 7&6 = System Calibration Status (0 to 3 where 3 is fully calibrated)
-	bits 5&4 = Gyroscope Calibration Status (0 to 3 where 3 is fully calibrated) 
-	bits 3&2 = Accelerometer Calibration Status (0 to 3 where 3 is fully calibrated)
-	bits 0&1 = Magnetometer Calibration Status (0 to 3 where 3 is fully calibrated) */
-	imuCmd[0] = 0xAA;     /* Initial byte for any BNO055 UART command is 0xAA. */
-	imuCmd[1] = 0x01;     /* Value of 0x01 means this is a READ command. */
-	imuCmd[2] = 0x35;     /* The address of the register to be read. */
-	imuCmd[3] = 0x01;     /* Number of bytes to be read. */
+	/* Send command to read the Calibration Status register 0x35
+	 * CALIB_STAT is a single byte: 
+	 * bits 7&6 = System Calibration Status (0 to 3 where 3 is fully calibrated)
+	 * bits 5&4 = Gyroscope Calibration Status (0 to 3 where 3 is fully calibrated) 
+	 * bits 3&2 = Accelerometer Calibration Status (0 to 3 where 3 is fully calibrated)
+	 * bits 0&1 = Magnetometer Calibration Status (0 to 3 where 3 is fully calibrated)
+	 */
+	imuCmd[0] = 0xAA;   // Initial byte for any BNO055 UART command is 0xAA.
+	imuCmd[1] = 0x01;   // Value of 0x01 means this is a READ command.
+	imuCmd[2] = 0x35;   // The address of the register to be read.
+	imuCmd[3] = 0x01;   // Number of bytes to be read.
 
 	do
 	{
@@ -610,13 +609,13 @@ void calibrate_imu_sensors(const int UART_IMU_ID, int8_t *uartErrorLog, size_t *
  * --------------------------------------------------------------------------------------------------------
  *
  * PARAMETERS:
- *		UART_IMU_ID:	The device ID of the BNO055 sensor on UART.
+ *     UART_IMU_ID:         The device ID of the BNO055 sensor on UART.
  *
- *		imuBuffer:		Pointer to a buffer in which to store the data read from the sensor.
+ *     imuBuffer:           Pointer to a buffer in which to store the data read from the sensor.
  *
- *		uartErrorLog:	Pointer to an array for storing error codes.
+ *     uartErrorLog:        Pointer to an array for storing error codes.
  *
- *		uartErrorLogCounter:	Pointer to a counter to keep track of the number of error codes recorded.
+ *     uartErrorLogCounter: Pointer to a counter to keep track of the number of error codes recorded.
  *
  * --------------------------------------------------------------------------------------------------------
  *
