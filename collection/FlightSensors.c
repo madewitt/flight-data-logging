@@ -251,7 +251,7 @@ void spi_pressure_isr(void)
 	spi_return_value = get_spi_pressure_data(buffer, bufferLength);
 
 	// Check to see if there is an error reading the data
-	spiData[spiCounter][PRESSURE_READ_ERROR] = ((spi_return_value == -1) ? 1 : 0)
+	spiData[spiCounter][PRESSURE_READ_ERROR] = ((spi_return_value == -1) ? 1 : 0);
    
 	// Store pressure data in arrays. Ignore temperature data since it is not used for pressure compensation.
 	spiData[spiCounter][PRESSURE_DATA_MSB] = buffer[1];
@@ -262,7 +262,7 @@ void spi_pressure_isr(void)
 	spi_return_value = request_new_spi_measurement();
    
 	// Check to see if there is an error requesting a new measurement
-	spiData[spiCounter][PRESSURE_REQUEST_ERROR]= ( (spi_return_value == -1) ? 1 : 0)
+	spiData[spiCounter][PRESSURE_REQUEST_ERROR]= ( (spi_return_value == -1) ? 1 : 0);
 
 	spiCounter++;
 }
@@ -323,7 +323,7 @@ void i2c_pressure_isr(void)
 	
 	// Read pressure and temperature data
 	static const size_t numberOfBytes = 7;
-	static uint8_t buffer[numberOfBytes] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
+	static uint8_t buffer[numberOfBytes] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	static volatile int i2c_return_value = read(i2cPressureId, buffer, numberOfBytes);
    
 	// Check for an error reading data
@@ -338,7 +338,7 @@ void i2c_pressure_isr(void)
 	i2c_return_value = request_new_i2c_measurement();
 
 	// Check to see if there is an error requesting a new measurement
-	i2cData[i2cCounter][PRESSURE_REQUEST_ERROR]= ( (i2c_return_value == -1) ? 1 : 0)
+	i2cData[i2cCounter][PRESSURE_REQUEST_ERROR]= ( (i2c_return_value == -1) ? 1 : 0);
    
 	i2cCounter++;
 }

@@ -67,7 +67,7 @@ static volatile int elevatorCounter;               // Counter for the number of 
 static volatile double elevatorTime[MAX_RECORDS];  // Array for storing PWM edge times. Index is the record number (elevatorCounter).
 
 // Throttle PWM Global Variables for ISR -- ONLY MODIFIED BY throttle_isr()
-static volatile int throttleCounter = 0;            // Counter for the number of data records collected
+static volatile int throttleCounter;                // Counter for the number of data records collected
 static volatile double throttleTime[MAX_RECORDS];   // Array for storing PWM edge times. Index is the record number (throttleCounter).
 
 // SPI Differential Pressure Sensor Global Variables for ISR -- ONLY MODIFIED by spi_pressure_isr()
@@ -139,7 +139,7 @@ void main()
 	}
 	else
 	{
-		printf("UART: BNO055 orientation sensor Id = %d\n\n", UART_IMU_ID)
+		printf("UART: BNO055 orientation sensor Id = %d\n\n", UART_IMU_ID);
 	}
 
 	// Use WiringPi library command to flush UART IO buffers.
@@ -155,7 +155,7 @@ void main()
 	size_t uartErrorLogCounter = 0;		// Initialize the UART error log counter.
 	
 	// Set the operating mode of the BNO055 orientation sensor to NDOF_FUSION_MODE.
-	start_imu_fusion_mode(UART_IMU_ID, uartErrorLog, &uartErrorLogCounter)
+	start_imu_fusion_mode(UART_IMU_ID, uartErrorLog, &uartErrorLogCounter);
 
 	// Calibrate the BNO055's magnetometer, accelerometer, and gyro.
 	calibrate_imu_sensors(const int UART_IMU_ID, int8_t *uartErrorLog, size_t *uartErrorLogCounter);
@@ -168,9 +168,9 @@ void main()
 
 	// Assign interrupt service routine functions to each interrupt.
 	wiringPiISR(SPI_PRESSURE_INTERRUPT_PIN, INT_EDGE_RISING, &spi_pressure_isr);
-	wiringPiISR(I2C_PRESSURE_INTERRUPT_PIN, INT_EDGE_RISING,&i2c_pressure_isr);
-	wiringPiISR(PWM_ELEVATOR_INTERRUPT_PIN, INT_EDGE_BOTH,&elevator_isr);
-	wiringPiISR(PWM_THROTTLE_INTERRUPT_PIN, INT_EDGE_BOTH,&throttle_isr);
+	wiringPiISR(I2C_PRESSURE_INTERRUPT_PIN, INT_EDGE_RISING, &i2c_pressure_isr);
+	wiringPiISR(PWM_ELEVATOR_INTERRUPT_PIN, INT_EDGE_BOTH, &elevator_isr);
+	wiringPiISR(PWM_THROTTLE_INTERRUPT_PIN, INT_EDGE_BOTH, &throttle_isr);
 
 	// Request inital pressure measurements on the SPI bus and I2C bus and check for initialization errors.
 	if(request_new_spi_measurement() == -1)
