@@ -5,7 +5,7 @@
 This repository hosts code used in a flight data collection system developed for a
 radio-controlled aircraft. This includes code used to collect data, as well as code used
 to process, filter, and visualize the data. 
-<a href="https://madewitt.com/2019/02/13/flight-data-collection-system/" target="_blank">Click here</a>
+<a href="https://madewitt.com/2019/02/13/flight-data-collection-system/" target"_blank">Click here</a>
 for more details about the project.
 
 
@@ -160,13 +160,13 @@ log are written as text messages.
 	
 ## Processing the Collected Data
 The following sample data files are included in the `processing` folder:
-- `processing/sample_data/imudata.csv` : from a test flight
-- `processing/sample_data/elevatordata.csv` : from a test flight
-- `processing/sample_data/throttledata.csv` : from a test flight
-- `processing/sample_data/flight_data/dp1data.csv` : from a test flight
-- `processing/sample_data/flight_data/dp2data.csv` : from a test flight
-- `processing/sample_data/background/dp1data.csv` : background readings taken indoors 
-- `processing/sample_data/background/dp2data.csv` : background readings taken indoors
+- `processing/sample-data/imudata.csv` : from a test flight
+- `processing/sample-data/elevatordata.csv` : from a test flight
+- `processing/sample-data/throttledata.csv` : from a test flight
+- `processing/sample-data/flight_data/dp1data.csv` : from a test flight
+- `processing/sample-data/flight_data/dp2data.csv` : from a test flight
+- `processing/sample-data/background/dp1data.csv` : background readings taken indoors 
+- `processing/sample-data/background/dp2data.csv` : background readings taken indoors
 
 Background differential pressure sensor data was taken by running the data collection code while
 the aircraft was indoors to ensure that there would be no airflow over the pitot-static tubes.
