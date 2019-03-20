@@ -5,7 +5,7 @@
 This repository hosts code used in a flight data collection system developed for a
 radio-controlled aircraft. This includes code used to collect data, as well as code used
 to process, filter, and visualize the data. 
-<a href="https://madewitt.com/2019/02/13/flight-data-collection-system/" target"_blank">Click here</a>
+<a href="https://madewitt.com/2019/02/13/flight-data-collection-system/" target="_blank">Click here</a>
 for more details about the project.
 
 
@@ -21,7 +21,7 @@ and throttle setting are measured by connecting the PWM outputs of aircraft's ra
 to GPIO pins on the Pi. Using interrupts, the rising and falling edges of the PWM signal are
 recorded so that the PWM signal can be reconstructed. Descriptions and derivations of the
 calibration functions used to convert raw data into final values can be found in the
-<a href="https://madewitt.com/2019/02/13/flight-data-collection-system/" target"_blank">project
+<a href="https://madewitt.com/2019/02/13/flight-data-collection-system/" target="_blank">project
 writeup</a>.
 
 
